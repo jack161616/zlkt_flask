@@ -1,10 +1,41 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>首页</title>
-</head>
-<body>
+{% extends 'base.html' %}
 
-</body>
-</html>
+{% block head %}
+<link rel="stylesheet" href="{{url_for('static',filename='css/index.css')}}">
+{% endblock %}
+
+{%block body%}
+<ul>
+    {% for question in questions %}
+    <li>
+        <div class="avatar-group">
+            <img src="{{url_for('static',filename='images/sql7.png')}}" alt="" class="avatar">
+        </div>
+        <div class="question-group">
+            <p class="question-title"><a href="{{url_for('detail',question_id=question.id)}}">{{question.title}}</a></p>
+            <p class="question-content">{{question.content}}</p>
+            <div class="question-info">
+                <span class="question-autor">{{question.author.username}}</span>
+                <span class="question-time">{{question.create_time}}</span>
+            </div>
+        </div>
+    </li>
+    {% endfor %}
+
+    <!--<li>-->
+        <!--<div class="avatar-group">-->
+            <!--<img src="{{url_for('static',filename='images/sql7.png')}}" alt="" class="avatar">-->
+        <!--</div>-->
+        <!--<div class="question-group">-->
+            <!--<p class="question-title"><a href="#">知了</a></p>-->
+            <!--<p class="question-content">shou dss  fsd sdf sf</p>-->
+            <!--<div class="question-info">-->
+                <!--<span class="question-autor">jack</span>-->
+                <!--<span class="question-time">201799999</span>-->
+            <!--</div>-->
+        <!--</div>-->
+    <!--</li>-->
+</ul>
+
+
+{%endblock%}
