@@ -5,9 +5,10 @@
 from flask import Flask,render_template,request,url_for,redirect,session
 import config
 from exts import db
-from models import User,Question
+from models import User,Question,Comment
 from hashlib import sha1
 from decorators import login_required
+from sqlalchemy import or_
 
 app = Flask(__name__)
 app.config.from_object(config)
@@ -117,13 +118,49 @@ def question():
 def detail(question_id):
     q = Question.query.filter(Question.id==question_id).first()
     context = {'title':u'详情','question':q}
-    return render_template('detail.html',**context)
+    response = render_template('detail.html', **context)
 
-@app.route('/add_comment/', methods=['POST'])
+    # response.set_cookie('question_id',question_id)
+    return response
+    # return render_template('detail.html',**context)
+
+@app.route('/add_comment/', methods=['GET','POST'])
+@login_required
 def add_comment():
-    comment = request.form.get('comment')
-    pass
+    if request.method == 'POST':
+        # print 'comment_url',request.url
+        content = request.form.get('comment')
+        question_id = request.form.get('question_id')
+        # print 'q_id:',question_id
+        user_id = session['user_id']
+        comment = Comment(content=content)
+        comment.question = Question.query.filter(Question.id==question_id).first()
+        # print 'comment.question:',comment.question
+        comment.author = User.query.filter(User.id == user_id).first()
+        db.session.add(comment)
+        db.session.commit()
+        # print 'user.comment:',User.query.filter(User.id == user_id).first().comments
+        return redirect(url_for('detail',question_id=question_id))
+        # return redirect('/')
+    # else:
+    #     url = request.cookies.get('url')
+    #     return redirect(url)
+    else:
+        # question_id = request.cookies.get('question_id')
+        return redirect(url_for('index'))
 
+@app.route('/search/')
+def search():
+    q = request.args.get('q')
+    print 'q:',q
+    #或
+    data = or_(Question.title.contains(q) , Question.content.contains(q))
+    questions = Question.query.filter(data).order_by('-create_time')
+
+    # 与
+    # questions = Question.query.filter.(Question.title.contains(q) , Question.content.contains(q))
+    context = {'title':u'搜索结果','questions':questions}
+    return render_template('index.html',**context)
 
 @app.context_processor
 def my_context_processor():
